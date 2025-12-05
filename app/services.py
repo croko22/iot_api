@@ -2,12 +2,15 @@ from PIL import Image
 from ultralytics import YOLO
 from app.schemas import DetectionResult, Box
 from app.config import Settings
+from app.models import DetectionEvent
+from sqlmodel import Session
 import io
 
 class FireDetectionService:
-    def __init__(self, model: YOLO, settings: Settings):
+    def __init__(self, model: YOLO, settings: Settings, db: Session):
         self.model = model
         self.settings = settings
+        self.db = db
 
     def predict(self, image_bytes: bytes, filename: str) -> DetectionResult:
         image = Image.open(io.BytesIO(image_bytes))
@@ -55,6 +58,18 @@ class FireDetectionService:
         
         annotated_image_url = f"/static/results/{unique_filename}"
         
+        # Save to DB
+        has_fire = any(d.class_name == 'fire' for d in detections)
+        event = DetectionEvent(
+            filename=filename,
+            annotated_image_url=annotated_image_url,
+            object_count=len(detections),
+            has_fire=has_fire
+        )
+        self.db.add(event)
+        self.db.commit()
+        self.db.refresh(event)
+
         return DetectionResult(
             filename=filename,
             detections=detections,

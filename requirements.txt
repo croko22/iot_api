@@ -4,3 +4,4 @@ ultralytics
 python-multipart
 pydantic-settings
 Pillow
+sqlmodel

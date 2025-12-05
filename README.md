@@ -86,5 +86,21 @@ curl -X POST "http://localhost:8000/predict" -F "file=@/path/to/image.jpg"
 
 ### Interactive Documentation
 
-Access the interactive API documentation (Swagger UI) at:
-`http://localhost:8000/docs`
+The easiest way to view and test the API is through the interactive documentation generated automatically by FastAPI:
+
+*   **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs) - Interactive exploration and testing.
+*   **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc) - Alternative documentation view.
+*   **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) - Raw OpenAPI schema.
+
+### Endpoint Summary
+
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Health check. |
+| `GET` | `/dashboard` | Get current system status, sensors, and thresholds. |
+| `POST` | `/sensors` | Update sensor readings (Temperature, Humidity, Smoke). |
+| `POST` | `/config/thresholds` | Update alert thresholds. |
+| `POST` | `/upload/audio` | Upload an audio file. |
+| `POST` | `/predict` | Detect fire in an image. |
+| `GET` | `/history/sensors` | Get historical sensor readings. |
+| `GET` | `/history/detections` | Get historical detection events. |
