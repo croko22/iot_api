@@ -76,3 +76,29 @@ class FireDetectionService:
             message=message,
             annotated_image_url=annotated_image_url
         )
+
+    @staticmethod
+    def check_sensor_risk(data, session: Session) -> bool:
+        """
+        Evaluate sensor data for potential fire risks using dynamic thresholds.
+        
+        Args:
+            data: SensorData object containing current readings.
+            session: Database session to fetch current thresholds.
+            
+        Returns:
+            bool: True if fire risk is detected, False otherwise.
+        """
+        from app.models import ThresholdsModel
+        
+        # Fetch current thresholds or default
+        thresholds = session.exec(select(ThresholdsModel).order_by(ThresholdsModel.updated_at.desc())).first()
+        
+        # Default values if no DB entry
+        temp_max = thresholds.temperature_max if thresholds else 50.0
+        # utilizing gas_max as smoke_level threshold for now
+        smoke_max = thresholds.gas_max if thresholds else 300.0
+        
+        if data.temperature > temp_max or data.smoke_level > smoke_max:
+            return True
+        return False

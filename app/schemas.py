@@ -14,8 +14,12 @@ class SensorData(BaseModel):
     timestamp: Optional[str] = None
 
 class Thresholds(BaseModel):
-    temp_alert: float = 50.0
-    smoke_alert: float = 300.0
+    temperature_max: float = 30.0
+    gas_max: float = 200.0
+
+class ThresholdsUpdate(BaseModel):
+    temperature_max: Optional[float] = None
+    gas_max: Optional[float] = None
 
 class Box(BaseModel):
     x1: float
