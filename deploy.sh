@@ -25,7 +25,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com --project $P
 # 2. Build Container
 echo "Building Container Image..."
 IMAGE_URL="gcr.io/$PROJECT_ID/$SERVICE_NAME"
-gcloud builds submit --tag $IMAGE_URL --project $PROJECT_ID
+gcloud builds submit --tag $IMAGE_URL --project $PROJECT_ID --cache-from $IMAGE_URL
 
 # 3. Deploy to Cloud Run with Volume Mount
 # --execution-environment gen2 is required for file system usage
