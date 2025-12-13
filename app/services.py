@@ -3,7 +3,7 @@ from ultralytics import YOLO
 from app.schemas import DetectionResult, Box
 from app.config import Settings
 from app.models import DetectionEvent
-from sqlmodel import Session
+from sqlmodel import Session, select
 import io
 
 class FireDetectionService:

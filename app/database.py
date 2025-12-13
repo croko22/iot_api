@@ -1,7 +1,9 @@
 from sqlmodel import SQLModel, create_engine, Session
 from typing import Generator
 
-sqlite_file_name = "database.db"
+import os
+
+sqlite_file_name = os.getenv("DB_PATH", "database.db")
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}

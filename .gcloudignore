@@ -1,0 +1,16 @@
+.git
+.gitignore
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+test_*.py
+test_endpoints.sh
+run.sh
+deploy.sh
+static/results/*
+static/audio/*
+!static/results/.keep
+!static/audio/.keep
