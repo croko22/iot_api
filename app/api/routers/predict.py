@@ -46,6 +46,13 @@ async def predict(
             }
             await manager.notify_dashboards(dashboard_message)
             
+            # Send Email Alert
+            from app.notifications import send_email_alert
+            send_email_alert(
+                subject=f"🔥 FIRE CONFIRMED (Visual): {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                body=f"Visual analysis confirmed fire!\n\nImage: {result.annotated_image_url}\nConfidence: {dashboard_message['confidence']:.2f}\n\nPlease check the system immediately."
+            )
+            
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

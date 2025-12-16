@@ -41,6 +41,13 @@ async def update_sensors(data: SensorData, session: Session = Depends(get_sessio
     
     # Broadcast to cameras if risk is high
     if fire_alert:
+        # Send Email Alert
+        from app.notifications import send_email_alert
+        send_email_alert(
+            subject=f"🔥 FIRE RISK DETECTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            body=f"High risk detected!\n\nTemperature: {data.temperature}°C\nSmoke Level: {data.smoke_level}\n\nPlease check the system immediately."
+        )
+
         camera_message = {
             "type": "search_image_alert",
             "data": data.dict(),
