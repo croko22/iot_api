@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status
 
 # Configuration
 SERVICE_NAME="iot-api"
@@ -18,6 +19,18 @@ BUCKET_NAME=$2
 echo "Deploying to Project: $PROJECT_ID"
 echo "Using Bucket for SQLite: $BUCKET_NAME"
 
+# Prepare Environment Variables
+ENV_STRING="DB_PATH=$MOUNT_PATH/database.db"
+if [ -f .env ]; then
+    echo "Found .env file, loading environment variables..."
+    # Read .env, ignore comments/empty lines, join with comma
+    FILE_ENV_VARS=$(grep -v '^#' .env | grep -v '^$' | paste -sd, -)
+    if [ ! -z "$FILE_ENV_VARS" ]; then
+        ENV_STRING="$ENV_STRING,$FILE_ENV_VARS"
+    fi
+fi
+echo "Environment variables prepared."
+
 # 1. Enable Services (idempotent)
 echo "Enabling Cloud Run and Cloud Build API..."
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com --project $PROJECT_ID
@@ -25,12 +38,9 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com --project $P
 # 2. Build Container
 echo "Building Container Image..."
 IMAGE_URL="gcr.io/$PROJECT_ID/$SERVICE_NAME"
-gcloud builds submit --tag $IMAGE_URL --project $PROJECT_ID --cache-from $IMAGE_URL
+gcloud builds submit --tag $IMAGE_URL --project $PROJECT_ID
 
 # 3. Deploy to Cloud Run with Volume Mount
-# --execution-environment gen2 is required for file system usage
-# --add-volume mounts the GCS bucket
-# --add-volume-mount binds it to /mnt/data
 echo "Deploying to Cloud Run..."
 
 gcloud run deploy $SERVICE_NAME \
@@ -42,7 +52,7 @@ gcloud run deploy $SERVICE_NAME \
   --execution-environment gen2 \
   --add-volume=name=db-volume,type=cloud-storage,bucket=$BUCKET_NAME \
   --add-volume-mount=volume=db-volume,mount-path=$MOUNT_PATH \
-  --set-env-vars=DB_PATH=$MOUNT_PATH/database.db \
+  --set-env-vars="$ENV_STRING" \
   --port 8000
 
 echo "Deployment Complete!"
