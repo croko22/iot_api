@@ -9,6 +9,7 @@ from app.services import FireDetectionService
 from app.schemas import DetectionResult
 from app.models import DetectionEvent
 from app.api.routers.websockets import manager
+from app.state import state
 
 router = APIRouter()
 
@@ -36,6 +37,7 @@ async def predict(
         has_fire = any(d.class_name == 'fire' for d in result.detections)
         
         if has_fire:
+            state.is_fire_detected = True
             # Notify dashboards of confirmed fire
             dashboard_message = {
                 "type": "fire_confirmed",

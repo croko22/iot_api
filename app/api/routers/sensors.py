@@ -6,6 +6,7 @@ from app.models import SensorReading
 from app.schemas import SensorData
 from app.services import FireDetectionService
 from app.api.routers.websockets import manager
+from app.state import state
 
 router = APIRouter()
 
@@ -16,6 +17,10 @@ async def update_sensors(data: SensorData, session: Session = Depends(get_sessio
     
     If risk is detected, triggers alerts to monitoring dashboards and cameras.
     """
+    # Check if fire mode is already active
+    if state.is_fire_detected:
+        return {"message": "Fire already detected. Sensor updates paused to prevent overload."}
+
     # Persist reading
     reading = SensorReading(
         temperature=data.temperature,
@@ -40,10 +45,15 @@ async def update_sensors(data: SensorData, session: Session = Depends(get_sessio
     await manager.notify_dashboards(dashboard_message)
     
     # Broadcast to cameras if risk is high
+    email_sent = False
+    email_error = None
+    camera_alert = False
+    
     if fire_alert:
+        state.is_fire_detected = True
         # Send Email Alert
         from app.notifications import send_email_alert
-        send_email_alert(
+        email_sent, email_error = send_email_alert(
             subject=f"🔥 FIRE RISK DETECTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             body=f"High risk detected!\n\nTemperature: {data.temperature}°C\nSmoke Level: {data.smoke_level}\n\nPlease check the system immediately."
         )
@@ -55,8 +65,15 @@ async def update_sensors(data: SensorData, session: Session = Depends(get_sessio
             "timestamp": datetime.now().isoformat()
         }
         await manager.notify_cameras(camera_message)
+        camera_alert = True
 
-    return {"message": "Sensors updated", "fire_alert": fire_alert}
+    return {
+        "message": "Sensors updated",
+        "fire_alert": fire_alert,
+        "email_sent": email_sent,
+        "email_error": email_error,
+        "camera_alert": camera_alert
+    }
 
 @router.get("/sensors", response_model=SensorData)
 def get_sensors(session: Session = Depends(get_session)):

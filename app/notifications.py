@@ -32,5 +32,7 @@ def send_email_alert(subject: str, body: str):
             server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
             server.sendmail(sender, receiver, message.as_string())
         logger.info(f"Email sent successfully to {receiver}")
+        return True, None
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
+        return False, str(e)

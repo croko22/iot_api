@@ -4,7 +4,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     APP_NAME: str = "YOLO Fire Detection API"
     MODEL_PATH: str = "models/best.pt"  # Default path, can be overridden by env var
-    CONFIDENCE_THRESHOLD: float = 0.25
+    CONFIDENCE_THRESHOLD: float = 0.1
     
     # Mailtrap Settings
     MAIL_USERNAME: str
